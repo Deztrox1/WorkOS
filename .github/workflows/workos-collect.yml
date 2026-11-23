@@ -1,0 +1,133 @@
+name: workos collect
+
+# Hourly: three collectors plus retention, each read-only toward its source, all writing only os_* tables:
+#   campaign_pulse (Instantly + GHL snapshots, SMS days, playbook status), ops_heartbeat (system checks +
+#   vendor balances), finance_pulse (invoice ledger; the
+#   ledger is a local workspace file, so in Actions it logs a skip and exits 0).
+#
+# Secrets (Settings -> Secrets -> Actions): SUPABASE_DB_URL, INSTANTLY_API_KEY, GHL_API_KEY,
+# GHL_LOCATION_ID, GHL_BRIGHTPATH_API_KEY, GHL_BRIGHTPATH_LOCATION_ID, OPENROUTER_API_KEY,
+# MILLIONVERIFIER_API_KEY, NUM_LOOKUP_API_KEY, CONSULTI_API_KEY, ANYMAIL_FINDER_API_KEY.
+# The collector reuses the clients that live in the PRIVATE Cold Email repo (a nested repo, not part
+# of this checkout), so it is checked out into ./cold-email; that needs COLD_EMAIL_REPO_TOKEN (a
+# PAT with repo read on cold-outreach). COLD_EMAIL_DIR tells the collector where it is.
+#
+# cold-outreach is pinned to a reviewed commit (QA r1 Q2): its code runs here with SUPABASE_DB_URL in the
+# environment, so an unreviewed commit to its main must never run in this job. To move the pin, read the
+# diff of `git log <old>..<new> -- execution/` in cold-outreach, then change COLD_EMAIL_REF below.
+# All actions are pinned to full commit SHAs (Q17).
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workos-collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      COLD_EMAIL_DIR: ${{ github.workspace }}/cold-email
+      COLD_EMAIL_REF: 920ffb0925b3302dcc46bd1c314f20b8c616ef1a   # cold-outreach main, 2026-10-27, reviewed 2026-10-28
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      # A plain fetch of the pinned commit, not actions/checkout: cold-outreach carries a gitlink
+      # (tools/google-maps-scraper) with no .gitmodules entry, and actions/checkout aborts on it
+      # ("No url found for submodule path"), which failed every run from 2026-10-27 16:41 UTC.
+      # The token is passed per command and never written to .git/config.
+      - name: Check out Cold Email (clients reused by the collector)
+        env:
+          TOKEN: ${{ secrets.COLD_EMAIL_REPO_TOKEN }}
+        run: |
+          set -euo pipefail
+          AUTH=$(printf 'x-access-token:%s' "$TOKEN" | base64 -w0)
+          echo "::add-mask::$AUTH"
+          git init -q cold-email
+          git -C cold-email -c http.extraheader="AUTHORIZATION: basic $AUTH" fetch -q --depth 1 \
+            https://github.com/Deztrox1/cold-outreach "$COLD_EMAIL_REF"
+          git -C cold-email -c advice.detachedHead=false checkout -q FETCH_HEAD
+          test "$(git -C cold-email rev-parse HEAD)" = "$COLD_EMAIL_REF"
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.13"   # must match the Python that compiled execution/requirements.txt (hash mode)
+
+      - run: python -m pip install --quiet --require-hashes -r execution/requirements.txt
+
+      - name: Fail early if the database secret is missing
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then echo "::error::SUPABASE_DB_URL secret is not set."; exit 1; fi
+
+      # Each step sees only the secrets it uses (security audit 2026-10-27, finding 9/16).
+      - name: Campaign pulse
+        id: pulse
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          INSTANTLY_API_KEY: ${{ secrets.INSTANTLY_API_KEY }}
+          GHL_API_KEY: ${{ secrets.GHL_API_KEY }}
+          GHL_LOCATION_ID: ${{ secrets.GHL_LOCATION_ID }}
+          GHL_BRIGHTPATH_API_KEY: ${{ secrets.GHL_BRIGHTPATH_API_KEY }}
+          GHL_BRIGHTPATH_LOCATION_ID: ${{ secrets.GHL_BRIGHTPATH_LOCATION_ID }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python3 execution/collectors/campaign_pulse.py
+
+      - name: Ops heartbeat
+        id: heartbeat
+        if: always()
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          MILLIONVERIFIER_API_KEY: ${{ secrets.MILLIONVERIFIER_API_KEY }}
+          NUM_LOOKUP_API_KEY: ${{ secrets.NUM_LOOKUP_API_KEY }}
+          CONSULTI_API_KEY: ${{ secrets.CONSULTI_API_KEY }}
+          ANYMAIL_FINDER_API_KEY: ${{ secrets.ANYMAIL_FINDER_API_KEY }}
+          INSTANTLY_API_KEY: ${{ secrets.INSTANTLY_API_KEY }}
+        run: python3 execution/collectors/ops_heartbeat.py
+
+      - name: Finance pulse
+        id: finance
+        if: always()
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: python3 execution/collectors/finance_pulse.py
+
+      # Hourly snapshots after 14 IST days fold to one per campaign per day; read events go after 180 days
+      # (QA r1 D8, D19). Its own step so a narrow collector role can later give DELETE to this step only.
+      - name: Retention
+        id: retention
+        if: always()
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: python3 execution/collectors/retention.py
+
+      # Cross-watch (QA r1 I01, r4 R4B04): the VPS sender stamps push_last_run every minute and the calendar unit stamps
+      # its last run every 2. If either stopped, fail this job so GitHub emails the owner. Prints only the times.
+      - name: Reminder and calendar watchdog
+        id: watchdog
+        if: always()
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: python3 execution/collectors/watchdog.py check
+
+      # One plain event in the app when anything above failed. It cannot mask the failure: continue-on-error, and
+      # it only runs because the job is already red.
+      - name: Record the failure in the app
+        if: failure()
+        continue-on-error: true
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          OUTCOMES: "Campaign pulse=${{ steps.pulse.outcome }}, Ops heartbeat=${{ steps.heartbeat.outcome }}, Finance pulse=${{ steps.finance.outcome }}, Retention=${{ steps.retention.outcome }}, Reminder and calendar watchdog=${{ steps.watchdog.outcome }}"
+        run: |
+          FAILED=$(printf '%s' "$OUTCOMES" | tr ',' '\n' | grep '=failure' | sed 's/=failure//; s/^ //' | paste -sd, - | sed 's/,/, /g')
+          python3 execution/collectors/watchdog.py failed "${FAILED:-an earlier step}"

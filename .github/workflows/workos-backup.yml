@@ -1,0 +1,107 @@
+name: workos backup
+
+# Nightly encrypted backup of the WorkOS database (QA r1 D7). Supabase Free keeps no restorable
+# backup, and every delete in the app is a hard delete, so this is the only copy.
+#
+#   schema.sql   pg_dump --schema-only of schema public (tables, views, functions, triggers, policies)
+#   os.dump      pg_dump -Fc of every public.os_* table, schema and data (incl. the migration ledger)
+# Both are tarred and ENCRYPTED before anything is uploaded; the artifact keeps 30 days.
+#
+# Needs (owner, once):
+#   Settings > Environments > `backup`  : environment secret SUPABASE_DB_URL (session pooler URL, port 5432)
+#   Settings > Variables > Actions      : BACKUP_AGE_RECIPIENT (an `age1...` public key)  OR
+#                                         BACKUP_GPG_PUBLIC_KEY (an ASCII-armored public key)
+# With neither variable set the job is SKIPPED (grey, not a red run every night) and nothing is dumped.
+# Once a key is set, any later problem (missing DB secret, wrong project) FAILS the run. It never
+# uploads plaintext.
+# Restore drill: db/README.md, "Backup and restore".
+
+on:
+  schedule:
+    - cron: "41 20 * * *"     # 02:11 IST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workos-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    # Skipped until the owner sets an encryption key, so an unconfigured backup is not a nightly red run.
+    if: ${{ vars.BACKUP_AGE_RECIPIENT != '' || vars.BACKUP_GPG_PUBLIC_KEY != '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: backup
+    steps:
+      - name: Refuse to run without an encryption key
+        env:
+          AGE_RECIPIENT: ${{ vars.BACKUP_AGE_RECIPIENT }}
+          GPG_KEY: ${{ vars.BACKUP_GPG_PUBLIC_KEY }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$AGE_RECIPIENT" ] && [ -z "$GPG_KEY" ]; then
+            echo "::error::Set repo variable BACKUP_AGE_RECIPIENT or BACKUP_GPG_PUBLIC_KEY. No backup was taken; nothing is uploaded unencrypted."
+            exit 1
+          fi
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::error::Environment secret SUPABASE_DB_URL (environment 'backup') is not set."
+            exit 1
+          fi
+          case "$SUPABASE_DB_URL" in
+            *yourprojectref*) ;;
+            *) echo "::error::SUPABASE_DB_URL does not name the WorkOS project."; exit 1 ;;
+          esac
+
+      - name: Install pg_dump 17 (PGDG, key fingerprint checked) and age
+        env:
+          PGDG_FPR: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
+        run: |
+          set -euo pipefail
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          got=$(gpg --show-keys --with-colons /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc | awk -F: '$1=="fpr"{print $10; exit}')
+          [ "$got" = "$PGDG_FPR" ] || { echo "::error::PGDG signing key fingerprint mismatch ($got)"; exit 1; }
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17 age
+          /usr/lib/postgresql/17/bin/pg_dump --version
+
+      - name: Dump and encrypt
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          AGE_RECIPIENT: ${{ vars.BACKUP_AGE_RECIPIENT }}
+          GPG_KEY: ${{ vars.BACKUP_GPG_PUBLIC_KEY }}
+        run: |
+          set -euo pipefail
+          umask 077
+          PG=/usr/lib/postgresql/17/bin
+          work="$RUNNER_TEMP/plain"; out="$RUNNER_TEMP/out"; mkdir -p "$work" "$out"
+          stamp=$(date -u +%Y%m%dT%H%MZ)
+          "$PG/pg_dump" --dbname="$SUPABASE_DB_URL" --schema-only --schema=public --no-owner --no-privileges -f "$work/schema.sql"
+          "$PG/pg_dump" --dbname="$SUPABASE_DB_URL" -Fc --table='public.os_*' --no-owner -f "$work/os.dump"
+          "$PG/pg_restore" --list "$work/os.dump" | grep -c "TABLE DATA" | sed 's/^/tables with data: /'
+          tar -C "$work" -cf "$work/backup.tar" schema.sql os.dump
+          if [ -n "$AGE_RECIPIENT" ]; then
+            age -r "$AGE_RECIPIENT" -o "$out/workos-$stamp.tar.age" "$work/backup.tar"
+          else
+            export GNUPGHOME="$RUNNER_TEMP/gnupg"; mkdir -p "$GNUPGHOME"; chmod 700 "$GNUPGHOME"
+            printf '%s\n' "$GPG_KEY" | gpg --batch --quiet --import
+            fpr=$(gpg --batch --with-colons --list-keys | awk -F: '$1=="fpr"{print $10; exit}')
+            gpg --batch --yes --trust-model always --recipient "$fpr" --output "$out/workos-$stamp.tar.gpg" --encrypt "$work/backup.tar"
+          fi
+          rm -rf "$work"
+          ls -l "$out"
+          # Belt and braces: the upload folder holds exactly one encrypted file and nothing readable.
+          [ "$(ls "$out" | wc -l)" -eq 1 ] && ls "$out" | grep -Eq '\.tar\.(age|gpg)$'
+
+      - name: Upload encrypted backup
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: workos-backup
+          path: ${{ runner.temp }}/out/
+          retention-days: 30
+          if-no-files-found: error

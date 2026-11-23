@@ -1,0 +1,74 @@
+/* Shell, Settings and Claude (QA r2 U01, U03, U09, U17, U19, U26). Loaded after today.css. */
+
+/* ---- the add button: no floating disc. A + in the phone top bar, an Add button at the top of the wide rail. ---- */
+.add-btn { flex: none; }
+.icon-btn.bar-add { border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--fg); }
+.icon-btn.bar-add:hover { background: var(--paper2); color: var(--fg); border-color: var(--fg2); }
+.icon-btn.bar-add[aria-expanded='true'] { border-color: var(--acc); color: var(--acc); }
+.rail .btn.rail-add { width: 100%; margin: 10px 0 2px; border-color: var(--acc); color: var(--acc); font-weight: 600; justify-content: center; }
+.rail .btn.rail-add:hover { background: var(--acc-soft); border-color: var(--acc); }
+.rail .btn.rail-add[aria-expanded='true'] { background: var(--acc-soft); }
+
+/* ---- a selected segment at night is a quiet key, not a light slab (QA r2 U19) ---- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .seg button[aria-pressed='true'], :root:not([data-theme='light']) .seg button[aria-checked='true'] {
+    background: var(--acc-soft); color: var(--fg); box-shadow: inset 0 0 0 1px var(--acc);
+  }
+}
+:root[data-theme='dark'] .seg button[aria-pressed='true'], :root[data-theme='dark'] .seg button[aria-checked='true'] {
+  background: var(--acc-soft); color: var(--fg); box-shadow: inset 0 0 0 1px var(--acc);
+}
+
+/* ---- Settings and Claude sit on the paper sheet like every other screen (QA r2 U03, U09) ---- */
+@media (min-width: 768px) {
+  .sheetpaper.page.settings-page, .sheetpaper.page.claude-page { max-width: var(--sheet-w, 760px); margin-inline: auto; }
+}
+.settings-page .seg { max-width: 360px; }
+.settings-page .field { margin-bottom: 14px; }
+.settings-page .sheet-sec > p { margin-top: 10px; }
+.settings-page .sheet-sec > .hint, .settings-page .field .hint { margin-top: 4px; }
+.settings-page .set-line { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-end; margin-top: 10px; }
+.settings-page .set-line .field { margin-bottom: 0; }
+.settings-page .list { margin-top: 8px; }
+.settings-page .list .row { border-bottom: 1px solid var(--line2); }
+.settings-page .kv { margin-top: 10px; }
+.settings-page .kv dt { font-size: 12px; font-weight: 600; letter-spacing: 0.02em; }
+.settings-page .kv dd { color: var(--fg2); }
+.settings-page .sys-details { margin-top: 8px; }
+
+/* ruled inputs, the same as in the sheets: written on, not typed into boxes */
+.settings-page .field input:not([type='checkbox']):not([type='radio']), .settings-page input.input {
+  border: 0; border-bottom: 1px solid var(--rule-in, var(--line)); border-radius: 0; background-color: transparent; padding: 8px 0;
+}
+.settings-page .field input:focus, .settings-page input.input:focus { outline: none; border-bottom-color: var(--acc); box-shadow: 0 1px 0 var(--acc); }
+.settings-page input[type='date']:invalid, .settings-page input[type='date'][value=''] { color: var(--mute); }
+
+/* inline links are 44 px tall (QA r2 U26) */
+.settings-page a.tap, .claude-page a.tap { min-height: 44px; display: inline-flex; align-items: center; gap: 4px; }
+
+/* ---- Claude: list rows with the time in the spine ---- */
+.claude-page .claude-state { margin: 10px 0 0; }
+.claude-page .lrow.done .t1 { color: var(--mute); }
+.claude-page .lrow .status-word { font-size: 11px; }
+
+/* ---- the full answer sheet ---- */
+.result-title { font-weight: 600; margin-bottom: 8px; overflow-wrap: anywhere; }
+.result-text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.5; margin: 0 0 10px; }
+.result-link { margin-left: -12px; }
+.sheet .field textarea[data-autofocus] { min-height: 160px; }
+
+/* ---- More: the Claude row carries the same dot as the tab (QA r2 U17) ---- */
+.more-list .dot-mark { margin-right: 6px; }
+
+/* Balances on a phone: the date drops under the text instead of taking 42% of the row (QA r3 U05). */
+@media (max-width: 480px) {
+  .row[data-testid^='bal-'] { flex-wrap: wrap; }
+  .row[data-testid^='bal-'] .side { width: 100%; }
+  .row[data-testid^='bal-'] .side input { width: 100% !important; }
+}
+
+/* QA r3 P05: on the phone a toast at the bottom sat over the row buttons and the closing line; it shows under the
+   top bar instead, where it covers only the date for a moment. */
+@media (max-width: 767px) {
+  .toasts { top: calc(68px + env(safe-area-inset-top)); bottom: auto; }
+}

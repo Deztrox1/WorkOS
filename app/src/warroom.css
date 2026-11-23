@@ -1,0 +1,153 @@
+/* The war room (logs/qa-r4-plan.md). Now is a marked line on the ruled sheet; the rest is ruled rows. Tokens only. */
+@media (min-width: 768px) { .war-paper { max-width: var(--sheet-w); margin-inline: auto; } }
+.war-head { align-items: flex-start; }
+.war-head .date { font-size: 22px; }
+.war-allday { margin-top: 8px; font: 500 13px/1.4 var(--font-body); color: var(--fg2); overflow-wrap: anywhere; }
+.war-note { margin-top: 8px; font-size: 13px; line-height: 1.4; color: var(--mute); }
+/* a whole-line link: a 44 px target with no taller line, so Now stays where it is */
+.war-note a { display: inline-flex; align-items: center; min-height: 44px; margin-block: -13px; text-decoration: underline; }
+.war-day { margin-top: 8px; font-size: 15px; line-height: 1.35; color: var(--fg2); overflow-wrap: anywhere; }
+
+/* Now: a highlighted band on the sheet. Square, edge to edge, ink rules above and below, one left edge with the rows. */
+.now-card {
+  margin: 12px -14px 0; padding: 12px 14px; background: var(--acc-soft); border-radius: 0;
+  border-top: 2px solid var(--fg); border-bottom: 1px solid var(--fg); display: flex; flex-direction: column; gap: 6px;
+}
+.nc-top { display: flex; align-items: center; gap: 8px; min-height: 22px; }
+.nc-word { font: 600 13px/1 var(--font-body); letter-spacing: 0.1em; text-transform: uppercase; color: var(--acc); }
+.nc-word:focus { outline: none; }
+.nc-swap { min-height: 150px; display: flex; flex-direction: column; gap: 6px; animation: nc-in 180ms cubic-bezier(0.22, 1, 0.36, 1); }
+@keyframes nc-in { from { opacity: 0; transform: translateY(6px); } }
+.nc-title {
+  font: 600 28px/1.12 var(--font-display); letter-spacing: -0.015em; color: var(--fg); text-align: left; text-wrap: balance;
+  overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden;
+  width: 100%; min-height: 44px; padding: 2px 0;
+}
+button.nc-title:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.nc-facts, .nc-line { font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; }
+.nc-facts { color: var(--fg2); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.nc-line { color: var(--fg); font-weight: 500; }
+.nc-facts .mono, .nc-line .mono { font-size: 13px; }
+.nc-acts { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+.nc-acts .grow { flex: 1; }
+.nc-acts .btn { min-width: 96px; justify-content: center; display: inline-flex; align-items: center; gap: 6px; }
+.nc-acts .btn:not(.primary) { background: var(--paper); }
+.nc-acts .btn[aria-disabled='true'] { opacity: 0.6; }
+.nc-acts .side { display: inline-flex; align-items: center; }
+.empty-now .nc-swap { min-height: 0; }
+.empty-now .nc-title { font-size: 22px; min-height: 0; }
+/* The hold keeps Done in one place while tasks are chained. Lunch or Gym sit for hours, so they get no hole (R4Y13). */
+.now-card:not([data-kind='task'], .empty-now) .nc-swap { min-height: 96px; }
+.ph-now { height: 200px; }
+@media (min-width: 768px) {
+  .war-head .date { font-size: 26px; }
+  .now-card { margin-inline: -20px; padding: 14px 20px 14px 0; display: grid; grid-template-columns: 120px minmax(0, 1fr); column-gap: 0; row-gap: 4px; }
+  .now-card > * { grid-column: 2; }
+  .now-card > .nc-top { grid-column: 1; grid-row: 1 / span 4; flex-direction: column; align-items: flex-start; gap: 6px; padding: 6px 0 0 20px; }
+  .nc-swap { min-height: 130px; }
+  .empty-now .nc-swap { min-height: 0; }
+  .now-card:not([data-kind='task'], .empty-now) .nc-swap { min-height: 88px; }
+  .nc-title { font-size: 34px; }
+  .empty-now .nc-title { font-size: 26px; }
+}
+@media (max-width: 359px) {
+  .nc-title { font-size: 22px; }
+  .nc-swap { min-height: 110px; }
+  .topbar .brand > span { display: none; }
+  .war-head .stamp { display: none; }
+  .sheet-head.war-head { grid-template-columns: 1fr; }
+}
+/* the night key, inside Now only: a filled teal key, so Done outranks Not now on the wash (R4U07) */
+:root[data-theme='dark'] .now-card .btn.primary { background: var(--acc); color: var(--on-acc); border-color: var(--acc); }
+:root[data-theme='dark'] .now-card .btn.primary:hover:not(:disabled) { background: var(--acc); filter: brightness(1.08); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .now-card .btn.primary { background: var(--acc); color: var(--on-acc); border-color: var(--acc); }
+  :root:not([data-theme='light']) .now-card .btn.primary:hover:not(:disabled) { background: var(--acc); filter: brightness(1.08); }
+}
+
+/* the rest of the day: time, rule, tick, what */
+.war-list { margin-top: 0; }
+.wrow { display: grid; grid-template-columns: 52px 44px minmax(0, 1fr) auto; align-items: center; min-height: 54px; border-bottom: 1px solid var(--line2); }
+.wrow > .check, .wrow > .wl-glyph { justify-self: center; }
+.wrow > .wl-time {
+  order: -1; align-self: stretch; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  position: relative; border-right: 1px solid var(--line);
+}
+.wrow.plain, .wrow.done, .wrow.passed { grid-template-columns: 96px minmax(0, 1fr); }
+.wrow.plain { padding: 6px 0; }
+.wrow.plain > .wl-body { grid-column: 2; }
+.wrow.done > .check, .wrow.passed > .check { justify-self: end; }
+.wrow.done .t1 { text-decoration: line-through; color: var(--mute); }
+.wrow.claude-wait { box-shadow: inset 2px 0 0 0 var(--acc); }
+.wl-glyph { color: var(--mute); display: inline-flex; width: 44px; justify-content: center; }
+.wl-time { font-size: 12.5px; color: var(--fg); }
+.wl-time.est { color: var(--mute); }
+.wl-t { position: relative; }
+.wl-t .tilde { position: absolute; right: 100%; }
+.wl-any { font-size: 11px; line-height: 1.1; text-align: center; color: var(--mute); white-space: normal; width: 36px; }
+.wl-body { min-width: 0; display: flex; flex-direction: column; padding: 4px 0; }
+.wl-body .main-btn { text-align: left; display: flex; flex-direction: column; gap: 2px; padding: 2px 4px; min-height: 44px; justify-content: center; min-width: 0; color: inherit; }
+.wl-body .main-btn.plain:hover { text-decoration: none; }
+.wl-body .t1 { font-weight: 500; line-height: 1.3; }
+.wl-body .t1, .wl-body .t2 { overflow-wrap: anywhere; }
+.wrow .t2 { font-size: 13px; color: var(--fg2); }
+.wrow .t3 { font: 400 12px var(--font-mono); color: var(--mute); }
+.wl-word { font: 600 11px/1 var(--font-body); letter-spacing: 0.1em; text-transform: uppercase; color: var(--acc); }
+.wl-meta { display: flex; align-items: center; gap: 6px; }
+.wl-meta .mono { font-size: 12.5px; color: var(--mute); }
+.wl-on-google { display: inline-flex; color: var(--mute); }
+.wrow.next { border-bottom: 1px solid var(--fg); }
+.war-list:last-of-type .wrow.next:last-child { border-bottom: 0; }
+.wrow.next .t1 { font-weight: 600; }
+.wrow.quiet .t1, .wrow.quiet .wl-t { color: var(--fg2); font-weight: 400; }
+.wrow .side { display: inline-flex; align-items: center; gap: 4px; }
+.wrow .side .btn.sm { border-color: transparent; background: none; color: var(--acc); }
+
+.folds { margin-top: 18px; border-top: 1px solid var(--fg); }
+.folds:not(:has(.fold)) { display: none; }
+.fold { border-bottom: 1px solid var(--line2); }
+.fold .older-toggle { width: 100%; border: 0; }
+.fold .list > li:last-child { border-bottom: 0; }
+.fold.look { margin-top: 10px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.fold.look .older-toggle { color: var(--now); }
+.war-foot { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.war-foot .btn { display: inline-flex; align-items: center; }
+.war-tm { font: 500 15px/1.35 var(--font-body); color: var(--fg); overflow-wrap: anywhere; }
+
+/* the mode switch sits on the screens it filters, at the top of the page (call N) */
+.mode-line { max-width: var(--sheet-w); margin: 0 auto 12px; }
+.mode-line .seg { max-width: 240px; }
+@media (max-width: 767px) { .mode-line + .sheetpaper { margin-top: 0; } }
+
+/* the day at a glance, beside the sheet on a wide screen: fixed blocks and Now only */
+.war-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
+.war-grid .war-paper { max-width: none; margin: 0; }
+.dayline { padding: 14px 14px 12px; position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow: hidden auto; }
+.dl-h { font: 600 13px/1 var(--font-body); letter-spacing: 0.1em; text-transform: uppercase; padding-bottom: 6px; border-bottom: 1px solid var(--fg); margin-bottom: 10px; }
+.dl-grid { position: relative; margin-left: 30px; }
+.dl-hour { position: absolute; left: -30px; right: 0; font-size: 11px; color: var(--mute); transform: translateY(-6px); }
+.dl-hour::after { content: ''; position: absolute; left: 30px; right: 0; top: 6px; border-top: 1px solid var(--line2); }
+.dl-block {
+  position: absolute; left: 0; width: 100%; min-height: 18px; padding: 0 6px; font: 500 11.5px/14px var(--font-body); color: var(--fg); background: var(--paper2);
+  border: 1px solid var(--line); border-radius: 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; z-index: 1;
+}
+.dl-block.flex { background: transparent; border-style: dashed; color: var(--fg2); z-index: 0; }
+.dl-block.now { background: var(--acc-soft); border: 1px solid var(--acc); color: var(--fg); }
+.dl-block.flex.now { border-style: dashed; }
+.dl-block.past { opacity: 1; background: transparent; color: var(--mute); }
+.dl-now { position: absolute; left: -4px; right: 0; height: 2px; background: var(--acc); z-index: 2; }
+@media (min-width: 768px) { .content:has(.war-grid) { max-width: 1120px; } }
+
+/* a task sheet beside the page never crushes the paper (R4U03) */
+body.sheet-open .war-grid { grid-template-columns: minmax(0, 1fr); }
+body.sheet-open .dayline { display: none; }
+@media (min-width: 768px) and (max-width: 1179px) {
+  body.sheet-open .content { margin: 0 auto; max-width: 920px; }
+  .backdrop { display: block; }
+  .sheet { box-shadow: var(--shadow); }
+}
+
+/* what tomorrow already holds, above the picks */
+.cal-list { margin: 4px 0 10px; }
+.cal-list li { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 4px; padding: 5px 0; font-size: 14px; color: var(--fg2); border-bottom: 1px solid var(--line2); }
+.cal-list .mono { font-size: 12.5px; color: var(--mute); }

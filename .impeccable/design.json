@@ -1,0 +1,267 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-29T00:00:00Z",
+  "title": "Design System: WorkOS",
+  "extensions": {
+    "colorMeta": {
+      "sea-glass": {
+        "role": "primary",
+        "displayName": "Sea-glass teal",
+        "canonical": "#0f6e66",
+        "tonalRamp": [
+          "#04201e",
+          "#093c38",
+          "#0c5e57",
+          "#0f6e66",
+          "#3c8f87",
+          "#7fbdb3",
+          "#b4d9d3",
+          "#d9ebe8"
+        ]
+      },
+      "now-red": {
+        "role": "secondary",
+        "displayName": "Now red",
+        "canonical": "#ad2f27",
+        "tonalRamp": [
+          "#3a0f0c",
+          "#6b1d18",
+          "#8c2720",
+          "#ad2f27",
+          "#cf6a63",
+          "#e59d97",
+          "#f0c4c0",
+          "#f6e3e0"
+        ]
+      },
+      "today-amber": {
+        "role": "secondary",
+        "displayName": "Today amber",
+        "canonical": "#845305",
+        "tonalRamp": [
+          "#2c1c02",
+          "#4f3103",
+          "#6a4204",
+          "#845305",
+          "#b07a26",
+          "#d1a458",
+          "#e6c995",
+          "#f5ead3"
+        ]
+      },
+      "plan-green": {
+        "role": "secondary",
+        "displayName": "Plan green",
+        "canonical": "#1b6b3e",
+        "tonalRamp": [
+          "#072215",
+          "#0f3d24",
+          "#165430",
+          "#1b6b3e",
+          "#4b9467",
+          "#7fbb97",
+          "#b3d9c1",
+          "#dfefe4"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Clinical paper",
+        "canonical": "#fbfcfc",
+        "tonalRamp": [
+          "#17211f",
+          "#46524f",
+          "#5c6866",
+          "#84918e",
+          "#cfd8d6",
+          "#e1e7e6",
+          "#f1f4f4",
+          "#fbfcfc"
+        ]
+      },
+      "night-paper": {
+        "role": "neutral",
+        "displayName": "Viewing-box sheet",
+        "canonical": "#161c1b",
+        "tonalRamp": [
+          "#0f1413",
+          "#161c1b",
+          "#1b2221",
+          "#202b29",
+          "#2a3533",
+          "#5e6c69",
+          "#7f8b88",
+          "#e6ecea"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Date",
+        "purpose": "Date on Today, stamp, evening heading. Bricolage 600."
+      },
+      "mono": {
+        "displayName": "Time and numbers",
+        "purpose": "Spine, tally, counts, amounts, band words."
+      }
+    },
+    "shadows": [
+      {
+        "name": "float",
+        "value": "0 8px 24px -12px rgba(23,33,31,0.35)",
+        "purpose": "Only floating sheets on a laptop. Night: rgba(0,0,0,0.7)."
+      }
+    ],
+    "motion": [
+      {
+        "name": "tick-hold",
+        "value": "600ms hold, then 200ms ease-out fade and fold",
+        "purpose": "A ticked row in a list. Disabled under prefers-reduced-motion."
+      },
+      {
+        "name": "capsule-glide",
+        "value": "0.4s cubic-bezier(0.22,1,0.36,1)",
+        "purpose": "Theme capsule chip."
+      },
+      {
+        "name": "slide-up",
+        "value": "180ms cubic-bezier(0.2,0.8,0.2,1)",
+        "purpose": "Floating Add and Claude sheets."
+      },
+      {
+        "name": "tick-colour",
+        "value": "150ms ease-out",
+        "purpose": "Tick box background and border."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "max 767px"
+      },
+      {
+        "name": "laptop",
+        "value": "min 768px"
+      },
+      {
+        "name": "wide-evening",
+        "value": "min 1200px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Teal slab by day; dark teal key at night.",
+      "html": "<button class=\"ds-btn-primary\">Add task</button>",
+      "css": ".ds-btn-primary{min-height:44px;padding:0 16px;border-radius:6px;border:1px solid var(--acc);background:var(--btn-fill);color:var(--btn-ink);font-weight:600;font-family:var(--font-body)}.ds-btn-primary:hover{background:var(--btn-hover)}.ds-btn-primary:focus-visible{outline:2px solid var(--acc);outline-offset:2px}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Quiet teal action.",
+      "html": "<button class=\"ds-btn-ghost\">Move to tomorrow</button>",
+      "css": ".ds-btn-ghost{min-height:44px;padding:0 12px;border-radius:6px;border:1px solid transparent;background:none;color:var(--acc);font-weight:600}.ds-btn-ghost:hover{background:var(--acc-soft)}.ds-btn-ghost:focus-visible{outline:2px solid var(--acc);outline-offset:2px}"
+    },
+    {
+      "name": "Ruled Input",
+      "kind": "input",
+      "refersTo": "input-ruled",
+      "description": "Written on a line, not typed into a box.",
+      "html": "<input class=\"ds-ruled\" placeholder=\"One line on how the day looks\">",
+      "css": ".ds-ruled{width:100%;min-height:44px;border:0;border-bottom:1px solid var(--rule-in);background:transparent;padding:8px 0;font-size:16px;color:var(--fg);caret-color:var(--acc)}.ds-ruled::placeholder{color:var(--mute)}.ds-ruled:focus{outline:none;border-bottom:2px solid var(--acc);padding-bottom:7px}"
+    },
+    {
+      "name": "Ruled Row",
+      "kind": "custom",
+      "refersTo": "band-now",
+      "description": "Band, time spine, title, side. The signature.",
+      "html": "<div class=\"ds-row\"><span class=\"ds-band\">NOW</span><span class=\"ds-spine\">09:30</span><div><div class=\"ds-t1\">Send the invoice</div><div class=\"ds-t2\">Northwind</div></div></div>",
+      "css": ".ds-row{display:grid;grid-template-columns:50px 60px 1fr;min-height:54px;border-bottom:1px solid var(--line2)}.ds-band{display:flex;justify-content:center;padding-top:19px;font:600 11px var(--font-mono);letter-spacing:.06em;color:var(--now);background:var(--now-soft);border-right:1px solid var(--line2)}.ds-spine{display:flex;align-items:center;justify-content:center;font:500 12.5px var(--font-mono);color:var(--fg2);border-right:1px solid var(--line)}.ds-t1{font-weight:500;padding:6px 4px 0}.ds-t2{font-size:13px;color:var(--fg2);padding:0 4px}"
+    },
+    {
+      "name": "Section Heading",
+      "kind": "custom",
+      "refersTo": "sheet-paper",
+      "description": "Uppercase heading over a 1 px ink rule.",
+      "html": "<div class=\"ds-sec\"><h2>Today</h2><span>4</span></div>",
+      "css": ".ds-sec{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:6px;border-bottom:1px solid var(--fg)}.ds-sec h2{margin:0;font:600 13px var(--font-body);letter-spacing:.1em;text-transform:uppercase}.ds-sec span{font:12px var(--font-mono);color:var(--mute)}"
+    },
+    {
+      "name": "Theme Capsule",
+      "kind": "custom",
+      "description": "64 by 32 capsule, chip glides.",
+      "html": "<span class=\"ds-cap\"><span class=\"ds-chip\"></span></span>",
+      "css": ".ds-cap{position:relative;display:inline-block;width:64px;height:32px;border-radius:16px;border:1px solid var(--line);background:var(--paper2)}.ds-chip{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:12px;background:var(--fg);transition:transform .4s cubic-bezier(.22,1,.36,1)}.ds-cap:hover .ds-chip{transform:translateX(32px)}"
+    },
+    {
+      "name": "Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "6 px tag.",
+      "html": "<span class=\"ds-tag\">Work</span>",
+      "css": ".ds-tag{display:inline-flex;align-items:center;min-height:24px;padding:0 8px;border-radius:6px;font-size:12px;background:var(--paper2);color:var(--fg2)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Handover Sheet",
+    "overview": "The owner opens the app the way a day nurse takes a ward from the night shift: one ruled sheet that says what to do first and what comes after. A time spine runs down the left in mono, a priority band sits in a fixed column beside it, and ruled rows follow in order. A drawn stamp names the sheet (Morning, Day, Evening).",
+    "keyCharacteristics": [
+      "One ruled sheet per screen, capped at 760 px on a laptop, full bleed on a 390 px phone.",
+      "Time and numbers are always JetBrains Mono. Titles are Hanken Grotesk. Bricolage is only for the date, the stamp and the evening heading.",
+      "State is carried by line form as well as colour.",
+      "Light and dark are equal citizens, switched by a capsule toggle."
+    ],
+    "rules": [
+      {
+        "name": "The Three-Words Rule",
+        "body": "Red, amber and green mean NOW, TODAY and PLAN and nothing else.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Ink Rule",
+        "body": "Teal is the only accent.",
+        "section": "colors"
+      },
+      {
+        "name": "The Night Key Rule",
+        "body": "At night the primary button is a dark teal key with a teal outline and teal ink.",
+        "section": "colors"
+      },
+      {
+        "name": "The Mono Numbers Rule",
+        "body": "Any time, date, count, price or duration is JetBrains Mono.",
+        "section": "typography"
+      },
+      {
+        "name": "The Fixed Size Rule",
+        "body": "Row text does not change size to show importance.",
+        "section": "typography"
+      },
+      {
+        "name": "The Rule Not Shadow Rule",
+        "body": "Structure is drawn with 1 px lines; a shadow is only for something that floats above the sheet.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do put the answer first: the first row on Today is the owner's first pick, and the greeting names it.",
+      "Do rank by band, weight and case on one text size.",
+      "Do keep every target at 44 px and every time, count or amount in mono.",
+      "Do use line form (dashed, half-tone, strike) as well as colour for state.",
+      "Do write in plain third-grade words. Copy rules: no em dashes, no exclamation marks, no guilt words, no developer words.",
+      "Do build both themes together and keep the toggle on every screen."
+    ],
+    "donts": [
+      "Don't stack equal cards on a grey page or open with a KPI header.",
+      "Don't use red, amber or green for anything but NOW, TODAY, PLAN and their status meanings.",
+      "Don't add a second accent hue or a gradient.",
+      "Don't put a shadow on something that sits on the sheet.",
+      "Don't nag: no escalating colours, no auto-dropping, no streak shame.",
+      "Don't return to the old cobalt-on-grey system; it was rejected as generic."
+    ]
+  }
+}

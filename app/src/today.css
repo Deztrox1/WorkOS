@@ -1,0 +1,166 @@
+/* Today, the shell and capture (QA round 1, builder B). Loaded after styles.css; overrides use its tokens only. */
+
+/* ------------------------------------------------------------ shell */
+.skip {
+  position: absolute; left: 8px; top: -80px; z-index: 200; background: var(--paper); color: var(--acc); border: 2px solid var(--acc);
+  border-radius: 6px; padding: 0 14px; font-weight: 600;
+}
+.skip:focus, .skip:focus-visible { top: 8px; }
+.content:focus { outline: none; }
+.topbar .grow { flex: 1; }
+/* the mode switch: compact, 44 px tall (U13, F22) */
+.mode-line .seg { height: 44px; }
+.mode-line .seg button { flex: none; padding: 0 14px; }
+.mode-line .seg button::after { top: -3px; bottom: -3px; }
+/* the More tab badge sits beside the icon, not on its dots (U30); a teal dot says a Claude result waits */
+.tab .badge { position: absolute; top: 5px; left: calc(50% + 8px); }
+.dot-mark { width: 10px; height: 10px; border-radius: 50%; background: var(--acc); display: inline-block; flex: none; box-shadow: 0 0 0 2px var(--paper); }
+.tab .dot-mark { position: absolute; top: 9px; left: calc(50% + 9px); }
+.rail-item .dot-mark { margin-left: auto; }
+.banner .btn.sm { background: var(--paper); }
+
+/* toast with Undo */
+.toast { display: flex; align-items: center; gap: 12px; }
+.toast span { min-width: 0; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
+.toast-act { flex: none; color: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; padding: 0 8px; margin: -10px -8px -10px 0; }
+
+/* ------------------------------------------------------------ the sheet */
+@media (min-width: 768px) { .today-paper { max-width: var(--sheet-w); margin-inline: auto; } }
+.sheet-head .greet { font-size: 14px; line-height: 1.45; text-wrap: pretty; margin-top: 8px; max-width: 62ch; }
+.greet .first-word { color: var(--acc); font-weight: 600; }
+.greet [data-testid='first-title'] { color: var(--fg); font-weight: 600; }
+.situation:focus { border-bottom: 2px solid var(--acc); padding-bottom: 7px; }
+
+/* the band is a 6 px tinted rule at every width; the word is for a screen reader (R4U22) */
+.srow > .band.older { color: var(--mute); background: var(--paper2); }
+/* the spine: a time, a due date, or minutes (U03). Every section keeps it, so the titles line up (QA r2 U08) */
+.srow > .spine { font-size: 12.5px; flex-direction: column; gap: 2px; text-align: center; line-height: 1.1; }
+.srow > .spine.date { font-size: 11.5px; letter-spacing: -0.02em; }
+.srow > .spine.est, .srow > .spine.past { color: var(--mute); }
+.srow > .spine .sp-note { font: 500 10px/1 var(--font-mono); color: var(--mute); }
+
+/* the now marker on the time order */
+.now-mark { display: grid; grid-template-columns: var(--band) var(--spine) minmax(0, 1fr); align-items: center; height: 0; position: relative; z-index: 1; }
+.now-mark .nm-t {
+  grid-column: 2; justify-self: center; font: 500 11px/1 var(--font-mono); color: var(--on-acc); background: var(--acc);
+  border-radius: 4px; padding: 3px 5px; transform: translateY(-1px);
+}
+.now-mark .nm-r { grid-column: 3; height: 2px; background: var(--acc); transform: translateY(-1px); }
+/* row one is "now": keep the pill, drop the rule, so the first row carries one teal mark and not four (QA r2 U11) */
+.now-mark.top .nm-r { display: none; }
+.now-mark.top .nm-t { transform: translateY(7px); }
+
+/* row one: the thing to do first; the greeting already names it, so the row only carries the inset rule */
+.srow.first > .body { box-shadow: inset 2px 0 0 var(--acc); }
+.srow .stack { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.srow > .body .stack > .main-btn { flex: none; }
+.srow .main-btn.plain { color: inherit; text-decoration: none; }
+.srow .rem-ic { color: var(--mute); }
+.srow.done .rem-ic { color: var(--line); }
+
+/* Claude on the row */
+.cl-line { display: flex; align-items: center; flex-wrap: wrap; gap: 2px 6px; padding: 0 4px 6px; font-size: 13px; color: var(--acc); }
+.cl-line > svg { flex: none; }
+.cl-line .cl-t { flex: 1 1 140px; min-width: 0; text-align: left; color: inherit; background: none; border: 0; padding: 10px 0; min-height: 44px; cursor: pointer; }
+.cl-line .cl-t:hover { text-decoration: underline; text-underline-offset: 3px; }
+.cl-line.done .cl-t { color: var(--fg); font-weight: 500; }
+.cl-line.stuck .cl-t { color: var(--warn); font-weight: 500; }
+.cl-line.failed .cl-t { color: var(--bad); }
+.cl-line .btn.sm { min-height: 44px; }
+.cl-line .cl-t { padding: 0; line-height: 22px; max-height: 44px; }
+
+/* the hand-off glyph: quiet until the row is hovered or focused (QA r2 U10) */
+.icon-btn.ask { color: var(--mute); }
+.srow:hover .icon-btn.ask, .srow:focus-within .icon-btn.ask, .row:hover .icon-btn.ask, .row:focus-within .icon-btn.ask,
+.lrow:hover .icon-btn.ask, .lrow:focus-within .icon-btn.ask, .icon-btn.ask:hover, .icon-btn.ask:focus-visible { color: var(--acc); }
+
+/* a ticked row in a list: tick and strike hold for 600 ms, then it fades and folds in 200 ms, and cannot be tapped (QA r2 U05) */
+li.leaving { pointer-events: none; overflow: hidden; }
+li.leaving .t1 { text-decoration: line-through; color: var(--mute); }
+li.leaving:not(.calm) { animation: row-leave 200ms ease-out 600ms forwards; }
+@keyframes row-leave {
+  from { max-height: 160px; opacity: 1; }
+  to { max-height: 0; min-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; border-bottom-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) { li.leaving { animation: none; } }
+
+/* morning: his own line from last night, labelled; the review and mood come back as one quiet line (QA r2 C07, P14) */
+.sit-label { display: block; margin-top: 14px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg2); }
+.last-night { margin-top: 6px; font-size: 13px; color: var(--fg2); text-wrap: pretty; }
+.situation-ro { margin-top: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 16px; color: var(--fg2); text-wrap: pretty; }
+.habit-quiet { margin-top: 8px; }
+
+/* evening: close each row */
+.close-acts { display: flex; gap: 8px; padding: 0 4px 8px; }
+
+/* the older backlog folds into one line */
+.sheet-sec.older { margin-top: 18px; }
+.older-toggle {
+  display: flex; align-items: center; gap: 8px; width: 100%; min-height: 48px; padding: 0 4px; text-align: left;
+  border-top: 1px solid var(--fg); border-bottom: 1px solid var(--line2); color: var(--fg); font-weight: 500;
+}
+.older-toggle .sec-n { margin-left: auto; font: 12px var(--font-mono); color: var(--acc); }
+.older-toggle:hover .sec-n { text-decoration: underline; }
+
+.sheet-foot { margin-top: 16px; padding-top: 4px; font-size: 13px; color: var(--fg2); display: flex; flex-wrap: wrap; align-items: center; gap: 0 10px; }
+.sheet-foot a { min-height: 44px; display: inline-flex; align-items: center; }
+
+/* ------------------------------------------------------------ tomorrow, inside the sheet (U10, U05) */
+.tomorrow.sheet-sec { margin-top: 22px; border: 0; border-radius: 0; background: transparent; padding: 0; }
+.tomorrow .sec-h.tm-h { align-items: center; padding-bottom: 0; min-height: 44px; }
+.tomorrow .tm-h h2 { flex: 1; font-size: 13px; }
+.tomorrow .tm-h .sec-n { font-family: var(--font-mono); }
+.tomorrow[data-open='true'] .tm-h h2 { font-family: var(--font-display); font-size: 22px; letter-spacing: -0.01em; text-transform: none; }
+.tomorrow.sheetpaper .tm-h { border-bottom: 1px solid var(--fg); padding-bottom: 6px; }
+.tomorrow .sub-h { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg2); margin: 18px 0 2px; }
+.tomorrow .sub-row { margin: 0; align-items: baseline; }
+.pick-more-row { margin: 0; border-bottom: 1px solid var(--line2); }
+.pick-more-row .btn { padding-left: 0; }
+.tomorrow input[type='search'] { margin: 4px 0 4px; font-size: 16px; }
+.row.pick { align-items: center; }
+.row.pick .main-btn { padding-left: 6px; }
+.row.pick .pick-mark { width: 44px; flex: none; display: inline-flex; justify-content: center; color: var(--mute); }
+.row.pick.on .pick-mark, .row.pick.on .t1 { color: var(--acc); }
+.t3 .area-tag { margin-right: 6px; }
+.wl-meta .area-tag { margin-right: 0; }
+.area-tag { font: 500 11px var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg2); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+.ruled-field { display: flex; flex-direction: column; gap: 2px; margin-top: 18px; min-width: 0; }
+.ruled-field .lbl { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg2); font-weight: 600; }
+.ruled-field .plan-line { font-size: 16px; min-height: 44px; }
+.ruled-field .plan-line:focus, .review-line:focus { border-bottom: 2px solid var(--acc); }
+.review-line {
+  width: 100%; border: 0; border-bottom: 1px solid var(--line); background: repeating-linear-gradient(transparent 0 27px, var(--line2) 27px 28px);
+  line-height: 28px; padding: 0; min-height: 56px; font-size: 16px; resize: none; caret-color: var(--acc);
+}
+.review-line:focus { outline: none; }
+.review-line::placeholder { font-style: italic; color: var(--mute); }
+.eve-close { margin-top: 0; }
+.mood { gap: 0; width: max-content; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; margin-top: 4px; }
+.mood button.chip { border: 0; border-radius: 0; border-right: 1px solid var(--line); background: var(--paper); }
+.mood button.chip:last-child { border-right: 0; }
+.mood button.chip[aria-pressed='true'] { background: var(--acc); color: var(--on-acc); }
+.mood-scale { width: 222px; }
+/* the day ends on its own sentence (QA r2 C06) */
+.closing-line { margin-top: 22px; padding-top: 12px; border-top: 1px solid var(--fg); font-family: var(--font-display); font-size: 17px; line-height: 1.35; text-wrap: pretty; }
+
+/* ------------------------------------------------------------ capture (the add button) */
+.capture .input { font-size: 16px; }
+.capture .preview { min-height: 34px; }
+.capture-alt { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.capture-alt .btn.ghost { padding: 0 10px; }
+.capture-alt .btn.primary { margin-left: auto; }
+@media (min-width: 768px) {
+  .sheet.quick {
+    top: 72px; left: calc(var(--rail) + 12px); right: auto; bottom: auto; width: 460px; border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow);
+    animation: slide-up 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  body.sheet-open:has(.sheet.quick) .content { margin: 0 auto; max-width: 920px; }
+}
+
+/* ------------------------------------------------------------ Ask Claude, Settings */
+.claude-hint { margin-bottom: 12px; }
+p.chip { display: inline-flex; white-space: normal; padding: 4px 8px; margin-bottom: 12px; }
+.vendor-link { color: inherit; justify-content: flex-start; gap: 4px; min-width: 0; }
+.sys-details { margin-top: 8px; }
+.sys-details summary { color: var(--acc); cursor: pointer; display: flex; align-items: center; justify-content: flex-start; width: max-content; }
+.list.health .row { min-height: 44px; align-items: center; }
